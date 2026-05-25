@@ -35,7 +35,15 @@ select.inp{appearance:none;cursor:pointer}
 .type-tabs{display:flex;gap:4px}
 .type-tab{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--text2)}
 .type-tab.active{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
-.user-info{font-size:12px;color:var(--text2);background:var(--bg3);padding:5px 10px;border-radius:6px;border:1px solid var(--border)}
+.user-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s}
+.user-card:hover{border-color:var(--blue)}
+.user-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.pin-dot{width:14px;height:14px;border-radius:50%;background:var(--border);transition:background .15s}
+.pin-dot.filled{background:var(--blue)}
+.pin-key{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:14px;border-radius:8px;font-size:18px;font-weight:600;cursor:pointer;transition:all .1s;text-align:center}
+.pin-key:hover{background:var(--bg4);border-color:var(--blue)}
+.pin-key:active{transform:scale(.93)}
+
 .btn-logout{font-size:12px;color:var(--text3);background:transparent;padding:5px 10px;border-radius:6px;border:1px solid var(--border)}
 .btn-logout:hover{color:var(--red);border-color:var(--red)}
 .nav{display:flex;gap:2px;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto}
@@ -130,15 +138,18 @@ select.inp{appearance:none;cursor:pointer}
   <div class="login-card">
     <div class="login-logo">FMS</div>
     <div class="login-sub">Purchase Order Management System</div>
-    <label class="lbl">Select your profile</label>
-    <select class="inp" id="user-select">
-      <option value="">— Choose user —</option>
-      <option value="abhishek">Abhishek (Doer)</option>
-      <option value="ajay">Ajay (Doer)</option>
-      <option value="narendra">Narendra (Admin)</option>
-      <option value="mehul">Mehul (Admin)</option>
-    </select>
-    <button class="btn-login" onclick="doLogin()">Sign In</button>
+    <div id="login-step1">
+      <label class="lbl">Select your profile</label>
+      <div id="user-cards" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+    </div>
+    <div id="login-step2" class="hidden">
+      <div id="login-who" style="font-size:15px;font-weight:600;margin-bottom:4px"></div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Enter your 4-digit PIN</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px" id="pin-dots"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px" id="pin-pad"></div>
+      <div style="font-size:12px;color:var(--red);text-align:center;min-height:18px" id="pin-error"></div>
+      <button class="btn-login" style="margin-top:8px;background:transparent;color:var(--text3);border:1px solid var(--border)" onclick="backToUsers()">← Back</button>
+    </div>
   </div>
 </div>
 
@@ -285,16 +296,114 @@ function showToast(msg,type){
 }
 
 // ══════════════════════════════════════════════════════════════
-// AUTH
+// AUTH — PIN BASED
 // ══════════════════════════════════════════════════════════════
-function doLogin(){
-  var sel=document.getElementById('user-select').value;
-  if(!sel){alert('Please select a user');return;}
-  S.user=sel;saveLocal();showApp();
+// PINs for each user (change these to your own PINs)
+var PINS = {
+  abhishek: '1234',
+  ajay:     '2345',
+  narendra: '3456',
+  mehul:    '4567'
+};
+
+var _pinUser = null;
+var _pinEntered = '';
+
+function buildUserCards() {
+  var avatarColors = {
+    abhishek:['#1a3a6e','#4f8ef7'],
+    ajay:    ['#0d3d2a','#34d399'],
+    narendra:['#2d1f5e','#a78bfa'],
+    mehul:   ['#3d2f08','#fbbf24']
+  };
+  var html = '';
+  Object.keys(USERS).forEach(function(uid) {
+    var u = USERS[uid];
+    var colors = avatarColors[uid];
+    html += '<div class="user-card" onclick="selectUser(\''+uid+'\')">'
+      +'<div class="user-avatar" style="background:'+colors[0]+';color:'+colors[1]+'">'+u.name.charAt(0)+'</div>'
+      +'<div>'
+      +'<div style="font-size:13px;font-weight:600;color:var(--text)">'+u.name+'</div>'
+      +'<div style="font-size:11px;color:var(--text3)">'+( u.role==='admin'?'Admin':'Doer')+'</div>'
+      +'</div>'
+      +'<span style="margin-left:auto;color:var(--text3);font-size:16px">›</span>'
+      +'</div>';
+  });
+  document.getElementById('user-cards').innerHTML = html;
 }
+
+function selectUser(uid) {
+  _pinUser = uid;
+  _pinEntered = '';
+  document.getElementById('login-step1').classList.add('hidden');
+  document.getElementById('login-step2').classList.remove('hidden');
+  document.getElementById('login-who').textContent = USERS[uid].name;
+  document.getElementById('pin-error').textContent = '';
+  buildPinPad();
+  updatePinDots();
+}
+
+function backToUsers() {
+  _pinUser = null; _pinEntered = '';
+  document.getElementById('login-step2').classList.add('hidden');
+  document.getElementById('login-step1').classList.remove('hidden');
+  document.getElementById('pin-error').textContent = '';
+}
+
+function buildPinPad() {
+  var dotsHtml = '';
+  for(var i=0;i<4;i++) dotsHtml += '<div class="pin-dot" id="pd-'+i+'"></div>';
+  document.getElementById('pin-dots').innerHTML = dotsHtml;
+
+  var keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
+  var html = '';
+  keys.forEach(function(k) {
+    if(k==='') { html += '<div></div>'; return; }
+    html += '<button class="pin-key" onclick="pinPress(\''+k+'\')">'+k+'</button>';
+  });
+  document.getElementById('pin-pad').innerHTML = html;
+}
+
+function updatePinDots() {
+  for(var i=0;i<4;i++) {
+    var el = document.getElementById('pd-'+i);
+    if(el) el.className = 'pin-dot' + (i < _pinEntered.length ? ' filled' : '');
+  }
+}
+
+function pinPress(k) {
+  document.getElementById('pin-error').textContent = '';
+  if(k==='⌫') {
+    _pinEntered = _pinEntered.slice(0,-1);
+    updatePinDots();
+    return;
+  }
+  if(_pinEntered.length >= 4) return;
+  _pinEntered += k;
+  updatePinDots();
+  if(_pinEntered.length === 4) {
+    setTimeout(checkPin, 100);
+  }
+}
+
+function checkPin() {
+  if(_pinEntered === PINS[_pinUser]) {
+    S.user = _pinUser;
+    saveLocal();
+    showApp();
+  } else {
+    document.getElementById('pin-error').textContent = '❌ Incorrect PIN. Try again.';
+    _pinEntered = '';
+    updatePinDots();
+  }
+}
+
 function doLogout(){
   S.user=null;saveLocal();
+  _pinUser=null;_pinEntered='';
   document.getElementById('app-page').classList.add('hidden');
+  document.getElementById('login-step2').classList.add('hidden');
+  document.getElementById('login-step1').classList.remove('hidden');
   document.getElementById('login-page').classList.remove('hidden');
 }
 async function showApp(){
@@ -751,6 +860,7 @@ async function deleteAllData(){
 // ══════════════════════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════════════════════
+buildUserCards();
 loadLocal();
 if(S.user){showApp();}
 </script>
