@@ -16,10 +16,93 @@ function readDB() {
   } catch(e) {}
   return {
     pos: [],
-    colorVendors: ['RKP CHEMICALS','UNIVERSAL AGENCY','COLOUR HOUSE'],
-    chemVendors:  ['RKP CHEMICALS','CHEM SUPPLIERS PVT LTD','NATIONAL CHEMICALS'],
+    colorVendors: [
+      'RKP CHEMICALS',
+      'UNIVERSAL',
+      'PRERAK DYES & CHEMICALS CO.',
+      'RAM RATAN & CO.',
+      'MADHAV INTERNATIONAL'
+    ],
+    chemVendors: [
+      'RKP CHEMICALS',
+      'UNIVERSAL AGENCY',
+      'SARAL DYE',
+      'PRERAK DYE',
+      'PYREX',
+      'RAM RATAN',
+      'JAI GURUDAV TRADING',
+      'CHEMICAL DISTRIBUTOR',
+      'BRIJ PRODUCT',
+      'R.S.R.O WATER SOLUTION',
+      'DWARKA DAS JAGANNATH',
+      'BLUE TEX PVT LTD',
+      'KESHAV INDUSTRIES',
+      'ASSOCIATED TRADERS',
+      'AQUATECH ENGINEERS',
+      'AGRAWAL GUM MANUFACTURING CO. PVT. LTD.',
+      'SHREE PANCHRATNA',
+      'MADHAV INTERNATIONAL',
+      'HIREN FABRIC',
+      'DIVYA ART',
+      'SHIVA ORGANICS',
+      'ISCON CHEMICALS',
+      'HARI HAR SHARAN & SONS',
+      'PRAKASH CHEMICALS',
+      'KHANDELWAL ORGOSOL PVT LTD',
+      'SHILPA DYEING & PRINTING MILLS',
+      'EVEREST FAB',
+      'DHANKOTHARI SALES',
+      'PARUL SILK MILK',
+      'STARLIT ENTERPRISES'
+    ],
   };
 }
+
+// Force-reset vendors to fresh list (call once via /api/reset-vendors)
+app.get('/api/reset-vendors', (req, res) => {
+  const db = readDB();
+  db.colorVendors = [
+    'RKP CHEMICALS',
+    'UNIVERSAL',
+    'PRERAK DYES & CHEMICALS CO.',
+    'RAM RATAN & CO.',
+    'MADHAV INTERNATIONAL'
+  ];
+  db.chemVendors = [
+    'RKP CHEMICALS',
+    'UNIVERSAL AGENCY',
+    'SARAL DYE',
+    'PRERAK DYE',
+    'PYREX',
+    'RAM RATAN',
+    'JAI GURUDAV TRADING',
+    'CHEMICAL DISTRIBUTOR',
+    'BRIJ PRODUCT',
+    'R.S.R.O WATER SOLUTION',
+    'DWARKA DAS JAGANNATH',
+    'BLUE TEX PVT LTD',
+    'KESHAV INDUSTRIES',
+    'ASSOCIATED TRADERS',
+    'AQUATECH ENGINEERS',
+    'AGRAWAL GUM MANUFACTURING CO. PVT. LTD.',
+    'SHREE PANCHRATNA',
+    'MADHAV INTERNATIONAL',
+    'HIREN FABRIC',
+    'DIVYA ART',
+    'SHIVA ORGANICS',
+    'ISCON CHEMICALS',
+    'HARI HAR SHARAN & SONS',
+    'PRAKASH CHEMICALS',
+    'KHANDELWAL ORGOSOL PVT LTD',
+    'SHILPA DYEING & PRINTING MILLS',
+    'EVEREST FAB',
+    'DHANKOTHARI SALES',
+    'PARUL SILK MILK',
+    'STARLIT ENTERPRISES'
+  ];
+  writeDB(db);
+  res.json({ ok: true, colorVendors: db.colorVendors, chemVendors: db.chemVendors });
+});
 
 function writeDB(db) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
