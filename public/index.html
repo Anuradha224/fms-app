@@ -514,8 +514,9 @@ function renderDash(c){
 
   html+='<div class="flex gap8" style="margin-bottom:12px;flex-wrap:wrap">'
     +'<div class="tabs" style="margin-bottom:0;border-bottom:none">'
-    +['active','all','cancelled'].map(function(f){
-        return '<button class="tab'+(S.dashFilter===f?' active':'')+'" onclick="setDashFilter(\''+f+'\')">'+f.charAt(0).toUpperCase()+f.slice(1)+'</button>';
+    +['active','complete','all','cancelled'].map(function(f){
+        var label=f==='active'?'Active':f==='complete'?'Complete':f==='cancelled'?'Cancelled':'All';
+        return '<button class="tab'+(S.dashFilter===f?' active':'')+'" onclick="setDashFilter(\''+f+'\')">'+label+'</button>';
       }).join('')
     +'</div>'
     +'<input class="search" style="flex:1;min-width:160px" placeholder="Search PO or vendor..." value="'+esc(S.dashSearch)+'" oninput="setDashSearch(this.value)"/>'
@@ -523,7 +524,18 @@ function renderDash(c){
     +'</div>';
 
   var filtered=S.pos.filter(function(p){
-    if(S.dashFilter==='active'&&p.status==='cancelled')return false;
+    // Active = not cancelled AND has at least one step not done
+    if(S.dashFilter==='active'){
+      if(p.status==='cancelled')return false;
+      var allDone=STEPS.every(function(sd){return p.steps[sd.code]&&p.steps[sd.code].done;});
+      if(allDone)return false;
+    }
+    // Complete = not cancelled AND all steps done
+    if(S.dashFilter==='complete'){
+      if(p.status==='cancelled')return false;
+      var allDone=STEPS.every(function(sd){return p.steps[sd.code]&&p.steps[sd.code].done;});
+      if(!allDone)return false;
+    }
     if(S.dashFilter==='cancelled'&&p.status!=='cancelled')return false;
     var q=S.dashSearch.toLowerCase();
     return!q||String(p.poNo).toLowerCase().includes(q)||p.vendor.toLowerCase().includes(q);
@@ -579,7 +591,20 @@ function renderPOBody(p){
     var pl=p.planned[sd.code];
     var late=!step.done&&isLate(pl,null);
     var dotCls=step.done?'dot-done':late?'dot-late':'dot-pending';
-    var canDo=u.steps.indexOf(sd.code)>=0&&!step.done&&p.status!=='cancelled';
+
+    // Step dependency rules:
+    // Step 2 (Follow up) requires Step 1 (Issue PO) to be done
+    // Step 5 (Store) and Step 6 (Accounts) require Step 3 (Receiving) to be done
+    var prerequisiteMet=true;
+    var prerequisiteMsg='';
+    if(sd.code==='2'&&!(p.steps['1']&&p.steps['1'].done)){
+      prerequisiteMet=false; prerequisiteMsg='Waiting for Issue PO to be done';
+    }
+    if((sd.code==='5'||sd.code==='6')&&!(p.steps['3']&&p.steps['3'].done)){
+      prerequisiteMet=false; prerequisiteMsg='Waiting for Material Receiving to be done';
+    }
+
+    var canDo=u.steps.indexOf(sd.code)>=0&&!step.done&&p.status!=='cancelled'&&prerequisiteMet;
     var canUndo=isAdmin&&step.done&&p.status!=='cancelled';
     html+='<div class="step-row">'
       +'<div class="step-dot '+dotCls+'">'+(step.done?'✓':sd.code)+'</div>'
@@ -588,6 +613,7 @@ function renderPOBody(p){
       +'<div class="step-dates">Planned: '+fmt(pl)
       +(step.done?' &nbsp;|&nbsp; <span style="color:'+(isLate(pl,step.actualDate)?'var(--red)':'var(--green)')+'">Done: '+fmt(step.actualDate)+'</span>':'')
       +(late?'&nbsp;<span style="color:var(--red)">⚠ Overdue</span>':'')
+      +(!step.done&&!prerequisiteMet&&u.steps.indexOf(sd.code)>=0?'&nbsp;<span style="color:var(--text3);font-size:10px">🔒 '+prerequisiteMsg+'</span>':'')
       +'</div>'
       +(step.remarks?'<div style="font-size:11px;color:var(--text3);margin-top:2px">Note: '+esc(step.remarks)+'</div>':'')
       +'</div>'
