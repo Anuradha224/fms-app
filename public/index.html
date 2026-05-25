@@ -189,17 +189,16 @@ var API = '';
 // ══════════════════════════════════════════════════════════════
 var USERS = {
   abhishek:{name:'Abhishek',role:'doer', steps:['1','3']},
-  ajay:    {name:'Ajay',    role:'doer', steps:['2','4','5','6']},
+  ajay:    {name:'Ajay',    role:'doer', steps:['2','5','6']},
   narendra:{name:'Narendra',role:'admin',steps:[]},
   mehul:   {name:'Mehul',   role:'admin',steps:[]}
 };
 var STEPS = [
-  {code:'1',label:'Issue PO',                doer:'abhishek',how:'Phone & Email'},
-  {code:'2',label:'Follow up with Supplier', doer:'ajay',    how:'Phone & WhatsApp'},
-  {code:'3',label:'Material Receiving',      doer:'abhishek',how:'Physical Check'},
-  {code:'4',label:'QC Check',                doer:'abhishek',how:'Physical Check'},
-  {code:'5',label:'Store Material & Daybook',doer:'ajay',    how:'Checklist ST-1'},
-  {code:'6',label:'Accounts Process',        doer:'ajay',    how:'Checklist PAC-1'}
+  {code:'1',label:'Issue PO',                doer:'abhishek',how:'Phone & Email',    scored:true},
+  {code:'2',label:'Follow up with Supplier', doer:'ajay',    how:'Phone & WhatsApp', scored:true},
+  {code:'3',label:'Material Receiving',      doer:'abhishek',how:'Physical Check',   scored:false},
+  {code:'5',label:'Store Material & Daybook',doer:'ajay',    how:'Checklist ST-1',   scored:true},
+  {code:'6',label:'Accounts Process',        doer:'ajay',    how:'Checklist PAC-1',  scored:true}
 ];
 var CHECKLIST=[
   {id:'q1',en:'Correct PO number on bill?',         hi:'क्या सही पीओ संख्या बिल पर है?'},
@@ -784,24 +783,33 @@ function renderMIS(c){
   var stepData={};
   STEPS.forEach(function(sd){
     var planned=0,done=0,late=0;
-    S.pos.forEach(function(p){
-      if(p.status==='cancelled')return;
-      var pl=p.planned[sd.code];if(!pl)return;
-      var plDate=new Date(pl);
-      if(plDate>=ws&&plDate<=we){
-        planned++;
-        var step=p.steps[sd.code];
-        if(step&&step.done){done++;if(isLate(pl,step.actualDate))late++;}
-      }
-    });
-    var score=planned>0?Math.round((done/planned*100-100)*100)/100:null;
-    stepData[sd.code]={planned,done,late,score,notDone:planned-done};
+    // Only count planned dates for scored steps
+    if(sd.scored){
+      S.pos.forEach(function(p){
+        if(p.status==='cancelled')return;
+        var pl=p.planned[sd.code];if(!pl)return;
+        var plDate=new Date(pl);
+        if(plDate>=ws&&plDate<=we){
+          planned++;
+          var step=p.steps[sd.code];
+          if(step&&step.done){done++;if(isLate(pl,step.actualDate))late++;}
+        }
+      });
+    }
+    var score=sd.scored&&planned>0?Math.round((done/planned*100-100)*100)/100:null;
+    stepData[sd.code]={planned,done,late,score,notDone:planned-done,scored:sd.scored};
   });
 
   html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:14px">';
   ['abhishek','ajay'].forEach(function(uid){
     var u=USERS[uid];var tp=0,td=0,tl=0;
-    STEPS.forEach(function(sd){if(u.steps.indexOf(sd.code)<0)return;var d=stepData[sd.code];tp+=d.planned;td+=d.done;tl+=d.late;});
+    // Only include scored steps in combined score
+    STEPS.forEach(function(sd){
+      if(!sd.scored)return;
+      if(u.steps.indexOf(sd.code)<0)return;
+      var d=stepData[sd.code];
+      tp+=d.planned;td+=d.done;tl+=d.late;
+    });
     var combined=tp>0?Math.round((td/tp*100-100)*100)/100:null;
     var cls=combined===null||combined===0?'score-zero':'score-bad';
     html+='<div class="card"><div class="card-title">'+u.name+'</div>'
@@ -819,13 +827,19 @@ function renderMIS(c){
 
   html+='<div class="card"><div class="card-title">Step-wise Breakdown</div><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Step</th><th>Doer</th><th>Planned</th><th>Done</th><th>Late</th><th>Not Done</th><th>Score</th></tr></thead><tbody>';
   STEPS.forEach(function(sd){
-    var d=stepData[sd.code],cls=d.score===null||d.score===0?'score-zero':'score-bad';
+    var d=stepData[sd.code];
+    var cls=d.score===null||d.score===0?'score-zero':'score-bad';
+    var scoreTxt=!sd.scored?'<span style="font-size:11px;color:var(--text3)">Not scored</span>'
+      :d.score===null?'—':d.score===0?'<span class="score-zero">0 ✓</span>':'<span class="'+cls+'">'+d.score+'</span>';
     html+='<tr><td><div style="font-weight:500">'+sd.label+'</div><div style="font-size:11px;color:var(--text3)">'+sd.how+'</div></td>'
       +'<td>'+(USERS[sd.doer]?USERS[sd.doer].name:'—')+'</td>'
-      +'<td>'+d.planned+'</td><td style="color:var(--green)">'+d.done+'</td>'
-      +'<td style="color:'+(d.late?'var(--amber)':'var(--text2)')+'">'+d.late+'</td>'
-      +'<td style="color:'+(d.notDone?'var(--red)':'var(--text2)')+'">'+d.notDone+'</td>'
-      +'<td><span class="'+cls+'">'+(d.score===null?'—':d.score===0?'0 ✓':d.score)+'</span></td></tr>';
+      +(sd.scored
+        ? '<td>'+d.planned+'</td><td style="color:var(--green)">'+d.done+'</td>'
+          +'<td style="color:'+(d.late?'var(--amber)':'var(--text2)')+'">'+d.late+'</td>'
+          +'<td style="color:'+(d.notDone?'var(--red)':'var(--text2)')+'">'+d.notDone+'</td>'
+        : '<td colspan="4" style="color:var(--text3);font-size:12px">No planned date — not included in scoring</td>'
+      )
+      +'<td>'+scoreTxt+'</td></tr>';
   });
   html+='</tbody></table></div></div>';
   c.innerHTML=html;
