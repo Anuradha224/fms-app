@@ -7,20 +7,20 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f1117;--bg2:#161b26;--bg3:#1e2535;--bg4:#252d40;
-  --border:#2a3448;--text:#e8eaf0;--text2:#9aa5bc;--text3:#5a6580;
-  --blue:#4f8ef7;--blue2:#2d6fd4;--blue-dim:#1a3a6e;
-  --green:#34d399;--green-dim:#0d3d2a;
-  --amber:#fbbf24;--amber-dim:#3d2f08;
-  --red:#f87171;--red-dim:#3d1111;
-  --purple:#a78bfa;--purple-dim:#2d1f5e;
+  --bg:#f0f2f5;--bg2:#ffffff;--bg3:#f5f7fa;--bg4:#e8ebf0;
+  --border:#dde1e8;--text:#1a1d23;--text2:#5a6278;--text3:#9aa0b0;
+  --blue:#2563eb;--blue2:#1d4ed8;--blue-dim:#dbeafe;
+  --green:#16a34a;--green-dim:#dcfce7;
+  --amber:#d97706;--amber-dim:#fef3c7;
+  --red:#dc2626;--red-dim:#fee2e2;
+  --purple:#7c3aed;--purple-dim:#ede9fe;
 }
 body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
 button{font-family:inherit;cursor:pointer;border:none;outline:none}
 input,select,textarea{font-family:inherit;outline:none}
 .hidden{display:none!important}
-#login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:100%;max-width:380px}
+#login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(135deg,#e8f0fe 0%,#f0f2f5 60%)}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:100%;max-width:380px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
 .login-logo{font-size:28px;font-weight:700;margin-bottom:4px}
 .login-sub{color:var(--text3);font-size:13px;margin-bottom:28px}
 .lbl{font-size:12px;color:var(--text2);margin-bottom:5px;display:block}
@@ -41,8 +41,10 @@ select.inp{appearance:none;cursor:pointer}
 .pin-dot{width:14px;height:14px;border-radius:50%;background:var(--border);transition:background .15s}
 .pin-dot.filled{background:var(--blue)}
 .pin-key{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:14px;border-radius:8px;font-size:18px;font-weight:600;cursor:pointer;transition:all .1s;text-align:center}
-.pin-key:hover{background:var(--bg4);border-color:var(--blue)}
+.pin-key:hover{background:var(--blue-dim);border-color:var(--blue)}
 .pin-key:active{transform:scale(.93)}
+.user-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s}
+.user-card:hover{border-color:var(--blue);background:var(--blue-dim)}
 
 .btn-logout{font-size:12px;color:var(--text3);background:transparent;padding:5px 10px;border-radius:6px;border:1px solid var(--border)}
 .btn-logout:hover{color:var(--red);border-color:var(--red)}
@@ -79,10 +81,12 @@ select.inp{appearance:none;cursor:pointer}
 .btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:5px}
 .btn-primary{background:var(--blue);color:#fff}
 .btn-primary:hover{background:var(--blue2)}
-.btn-success{background:var(--green-dim);color:var(--green);border:1px solid #1a5c42}
-.btn-success:hover{background:#1a5c42}
-.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid #5c1a1a}
+.btn-success{background:var(--green-dim);color:var(--green);border:1px solid #bbf7d0}
+.btn-success:hover{background:#bbf7d0}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid #fecaca}
+.btn-danger:hover{background:#fecaca}
 .btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--bg4)}
 .btn-sm{padding:4px 10px;font-size:11px}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:200;padding:14px}
 .modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
@@ -94,17 +98,17 @@ select.inp{appearance:none;cursor:pointer}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
 .alert{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:10px}
-.alert-warn{background:var(--amber-dim);border:1px solid #7a5c10;color:var(--amber)}
-.alert-danger{background:var(--red-dim);border:1px solid #5c1a1a;color:var(--red)}
-.alert-info{background:var(--blue-dim);border:1px solid var(--blue2);color:var(--blue)}
-.alert-success{background:var(--green-dim);border:1px solid #1a5c42;color:var(--green)}
+.alert-warn{background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
+.alert-danger{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b}
+.alert-info{background:#dbeafe;border:1px solid #93c5fd;color:#1e40af}
+.alert-success{background:#dcfce7;border:1px solid #86efac;color:#14532d}
 .cl-item{display:flex;align-items:flex-start;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);gap:8px}
 .cl-q-en{font-size:12px;color:var(--text)}
 .cl-q-hi{font-size:11px;color:var(--text3)}
 .cl-btns{display:flex;gap:6px;flex-shrink:0}
 .cl-btn{padding:3px 10px;border-radius:5px;font-size:11px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer}
-.cl-btn.yes.active{background:var(--green-dim);border-color:var(--green);color:var(--green)}
-.cl-btn.no.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+.cl-btn.yes.active{background:var(--green-dim);border-color:#86efac;color:var(--green)}
+.cl-btn.no.active{background:var(--red-dim);border-color:#fca5a5;color:var(--red)}
 .file-area{border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;color:var(--text3);font-size:12px;display:block}
 .file-area:hover{border-color:var(--blue)}
 .file-area.done{border-color:var(--green);background:var(--green-dim);color:var(--green)}
@@ -535,19 +539,22 @@ function setDashSearch(v){S.dashSearch=v;render();}
 
 function renderPOCard(p){
   var rcvd=(p.receivings||[]).reduce(function(a,r){return a+r.qty;},0);
+  var cancelledQty=p.cancelledQty||0;
   var pct=Math.min(100,Math.round(rcvd/p.totalQty*100));
   var doneCount=Object.values(p.steps).filter(function(s){return s&&s.done;}).length;
+  var totalSteps=STEPS.length;
   var stBadge=p.status==='cancelled'
     ?'<span class="badge b-red">Cancelled</span>'
-    :doneCount===6?'<span class="badge b-green">Complete</span>'
+    :doneCount===totalSteps?'<span class="badge b-green">Complete</span>'
     :doneCount===0?'<span class="badge b-gray">Not Started</span>'
-    :'<span class="badge b-amber">Step '+doneCount+'/6</span>';
+    :'<span class="badge b-amber">Step '+doneCount+'/'+totalSteps+'</span>';
+  var rcvdDisplay=rcvd+(cancelledQty>0?' <span style="color:var(--red);font-size:10px">('+cancelledQty+' cancelled)</span>':'');
 
   return'<div class="po-card">'
     +'<div class="po-header" onclick="togglePO(\''+p.id+'\')">'
     +'<div><div class="flex gap6"><span class="po-num">PO #'+esc(p.poNo)+'</span>'
     +'<span class="badge '+(p.type==='COLOR'?'b-blue':'b-purple')+'">'+p.type+'</span>'+stBadge+'</div>'
-    +'<div class="po-meta"><span>🏢 '+esc(p.vendor)+'</span><span>📦 '+rcvd+'/'+p.totalQty+'</span><span>📅 '+fmtDate(p.entryDate)+'</span><span>⏳ '+p.leadDays+'d lead</span></div>'
+    +'<div class="po-meta"><span>🏢 '+esc(p.vendor)+'</span><span>📦 '+rcvdDisplay+'/'+p.totalQty+'</span><span>📅 '+fmtDate(p.entryDate)+'</span><span>⏳ '+p.leadDays+'d lead</span></div>'
     +(pct>0&&pct<100?'<div class="partial-bar"><div class="partial-fill" style="width:'+pct+'%"></div></div>':'')
     +'</div><span style="color:var(--text3);font-size:16px">▼</span></div>'
     +'<div class="po-body hidden" id="pob-'+p.id+'">'+renderPOBody(p)+'</div>'
@@ -556,14 +563,24 @@ function renderPOCard(p){
 
 function renderPOBody(p){
   var u=USERS[S.user];
+  var isAdmin=u.role==='admin';
+  var rcvd=(p.receivings||[]).reduce(function(a,r){return a+r.qty;},0);
+  var cancelledQty=p.cancelledQty||0;
   var html='';
-  if(p.status==='cancelled')html+='<div class="alert alert-danger">Cancelled: '+esc(p.cancelRemark||'No reason given')+'</div>';
+
+  if(p.status==='cancelled')
+    html+='<div class="alert alert-danger">Cancelled: '+esc(p.cancelRemark||'No reason given')+'</div>';
+
+  if(cancelledQty>0&&p.status!=='cancelled')
+    html+='<div class="alert alert-warn">⚠ '+cancelledQty+' units cancelled — not expected to be received.</div>';
+
   STEPS.forEach(function(sd){
     var step=p.steps[sd.code]||{done:false};
     var pl=p.planned[sd.code];
     var late=!step.done&&isLate(pl,null);
     var dotCls=step.done?'dot-done':late?'dot-late':'dot-pending';
     var canDo=u.steps.indexOf(sd.code)>=0&&!step.done&&p.status!=='cancelled';
+    var canUndo=isAdmin&&step.done&&p.status!=='cancelled';
     html+='<div class="step-row">'
       +'<div class="step-dot '+dotCls+'">'+(step.done?'✓':sd.code)+'</div>'
       +'<div style="flex:1;min-width:0">'
@@ -574,9 +591,14 @@ function renderPOBody(p){
       +'</div>'
       +(step.remarks?'<div style="font-size:11px;color:var(--text3);margin-top:2px">Note: '+esc(step.remarks)+'</div>':'')
       +'</div>'
+      +'<div style="display:flex;gap:5px;flex-shrink:0">'
       +(canDo?'<button class="btn btn-success btn-sm" onclick="openMarkDone(\''+p.id+'\',\''+sd.code+'\')">Mark Done</button>':'')
+      +(canUndo?'<button class="btn btn-ghost btn-sm" onclick="undoMarkDone(\''+p.id+'\',\''+sd.code+'\')" style="color:var(--amber);border-color:var(--amber)">↩ Undo</button>':'')
+      +'</div>'
       +'</div>';
   });
+
+  // Receiving history
   if((p.receivings||[]).length){
     html+='<div class="mt8"><div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600">RECEIVING HISTORY</div>';
     p.receivings.forEach(function(r){
@@ -590,8 +612,26 @@ function renderPOBody(p){
     });
     html+='</div>';
   }
-  if(USERS[S.user].role==='admin'&&p.status!=='cancelled')
-    html+='<button class="btn btn-danger btn-sm mt8" onclick="openCancel(\''+p.id+'\')">✕ Cancel PO</button>';
+
+  // Action buttons row
+  if(p.status!=='cancelled'){
+    html+='<div class="flex gap6 mt8" style="flex-wrap:wrap">';
+    // Cancel: all doers + admins
+    html+='<button class="btn btn-danger btn-sm" onclick="openCancel(\''+p.id+'\')">✕ Cancel PO</button>';
+    // Partial qty cancel: all doers + admins
+    var remaining=p.totalQty-rcvd-cancelledQty;
+    if(remaining>0)
+      html+='<button class="btn btn-ghost btn-sm" onclick="openPartialCancel(\''+p.id+'\')" style="color:var(--amber);border-color:var(--amber)">📦 Cancel Remaining Qty</button>';
+    // Edit: admin only
+    if(isAdmin)
+      html+='<button class="btn btn-ghost btn-sm" onclick="openEditPO(\''+p.id+'\')">✏️ Edit PO</button>';
+    html+='</div>';
+  }
+
+  // Delete: admin only
+  if(isAdmin)
+    html+='<button class="btn btn-danger btn-sm mt8" onclick="deletePO(\''+p.id+'\')" style="opacity:.7">🗑 Delete PO</button>';
+
   return html;
 }
 
@@ -737,7 +777,7 @@ async function submitMarkDone(){
 }
 
 // ══════════════════════════════════════════════════════════════
-// CANCEL PO
+// CANCEL PO — all users
 // ══════════════════════════════════════════════════════════════
 function openCancel(poId){
   var po=S.pos.find(function(p){return p.id===poId;});if(!po)return;
@@ -755,6 +795,113 @@ async function confirmCancel(poId){
   try{
     await apiPatch('/api/pos/'+poId,{...po,status:'cancelled',cancelRemark:remark});
     closeModal();showToast('PO cancelled','success');
+    await refreshAndRender();
+  }catch(e){alert('Error — check connection');}
+}
+
+// ══════════════════════════════════════════════════════════════
+// PARTIAL QTY CANCEL — all users
+// ══════════════════════════════════════════════════════════════
+function openPartialCancel(poId){
+  var po=S.pos.find(function(p){return p.id===poId;});if(!po)return;
+  var rcvd=(po.receivings||[]).reduce(function(a,r){return a+r.qty;},0);
+  var alreadyCancelled=po.cancelledQty||0;
+  var remaining=po.totalQty-rcvd-alreadyCancelled;
+  showModal('Cancel Remaining Quantity',
+    '<div class="alert alert-info">PO #'+esc(po.poNo)+' — Ordered: '+po.totalQty+', Received: '+rcvd+', Remaining: '+remaining+'</div>'
+    +'<div class="form-group"><label class="lbl">Quantity to cancel (max '+remaining+')</label>'
+    +'<input class="inp" type="number" id="cancel-qty" max="'+remaining+'" placeholder="e.g. '+remaining+'"/></div>'
+    +'<div class="form-group"><label class="lbl">Reason</label>'
+    +'<textarea class="inp" id="cancel-qty-reason" rows="2" placeholder="Why is this qty not coming?"></textarea></div>',
+    '<button class="btn btn-ghost" onclick="closeModal()">Back</button>'
+    +'<button class="btn btn-danger" onclick="confirmPartialCancel(\''+poId+'\','+remaining+')">Confirm</button>'
+  );
+}
+async function confirmPartialCancel(poId,maxQty){
+  var qty=parseInt((document.getElementById('cancel-qty')||{}).value||'0');
+  var reason=(document.getElementById('cancel-qty-reason')||{}).value||'';
+  if(!qty||qty<=0||qty>maxQty){alert('Enter a valid quantity (1 to '+maxQty+')');return;}
+  var po=S.pos.find(function(p){return p.id===poId;});if(!po)return;
+  var newCancelledQty=(po.cancelledQty||0)+qty;
+  var rcvd=(po.receivings||[]).reduce(function(a,r){return a+r.qty;},0);
+  // If received + cancelled now equals total, mark receiving as done
+  var updated={...po,cancelledQty:newCancelledQty};
+  if(rcvd+newCancelledQty>=po.totalQty&&!po.steps['3'].done){
+    var now=new Date().toISOString();
+    updated.steps={...po.steps,'3':{done:true,actualDate:now,remarks:'Completed — '+qty+' units cancelled: '+reason,checklistAnswers:{}}};
+    var pd=calcPostRcv(now);
+    updated.planned={...po.planned,'5':pd['5'],'6':pd['6']};
+  }
+  try{
+    await apiPatch('/api/pos/'+poId,updated);
+    closeModal();showToast(qty+' units marked as cancelled','success');
+    await refreshAndRender();
+  }catch(e){alert('Error — check connection');}
+}
+
+// ══════════════════════════════════════════════════════════════
+// EDIT PO — admin only
+// ══════════════════════════════════════════════════════════════
+function openEditPO(poId){
+  var po=S.pos.find(function(p){return p.id===poId;});if(!po)return;
+  var vOpts=S.vendors.map(function(v){return'<option value="'+esc(v)+'"'+(v===po.vendor?' selected':'')+'>'+esc(v)+'</option>';}).join('');
+  showModal('Edit Purchase Order — PO #'+esc(po.poNo),
+    '<div class="form-row">'
+    +'<div class="form-group"><label class="lbl">PO Number</label><input class="inp" id="ep-pono" value="'+esc(po.poNo)+'"/></div>'
+    +'<div class="form-group"><label class="lbl">Vendor</label><select class="inp" id="ep-vendor"><option value="">Select vendor</option>'+vOpts+'</select></div>'
+    +'</div><div class="form-row">'
+    +'<div class="form-group"><label class="lbl">Total Qty Ordered</label><input class="inp" type="number" id="ep-qty" value="'+po.totalQty+'"/></div>'
+    +'<div class="form-group"><label class="lbl">Lead Time (days)</label><input class="inp" type="number" id="ep-lead" value="'+po.leadDays+'"/></div>'
+    +'</div>',
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>'
+    +'<button class="btn btn-primary" onclick="submitEditPO(\''+poId+'\')">Save Changes</button>'
+  );
+}
+async function submitEditPO(poId){
+  var po=S.pos.find(function(p){return p.id===poId;});if(!po)return;
+  var poNo=(document.getElementById('ep-pono')||{}).value||'';
+  var vendor=(document.getElementById('ep-vendor')||{}).value||'';
+  var qty=parseInt((document.getElementById('ep-qty')||{}).value||'0');
+  var lead=parseInt((document.getElementById('ep-lead')||{}).value||'0');
+  if(!poNo.trim()||!vendor||!qty||!lead){alert('All fields are required');return;}
+  // Recalculate planned dates if lead time changed
+  var planned=lead!==po.leadDays?calcPlanned(po.entryDate,lead):po.planned;
+  try{
+    await apiPatch('/api/pos/'+poId,{...po,poNo:poNo.trim(),vendor,totalQty:qty,leadDays:lead,planned});
+    closeModal();showToast('PO updated','success');
+    await refreshAndRender();
+  }catch(e){alert('Error — check connection');}
+}
+
+// ══════════════════════════════════════════════════════════════
+// DELETE PO — admin only
+// ══════════════════════════════════════════════════════════════
+async function deletePO(poId){
+  var po=S.pos.find(function(p){return p.id===poId;});if(!po)return;
+  if(!confirm('Permanently DELETE PO #'+po.poNo+'? This cannot be undone.'))return;
+  try{
+    await apiFetch('DELETE','/api/pos/'+poId);
+    showToast('PO deleted','success');
+    await refreshAndRender();
+  }catch(e){alert('Error — check connection');}
+}
+
+// ══════════════════════════════════════════════════════════════
+// UNDO MARK DONE — admin only
+// ══════════════════════════════════════════════════════════════
+async function undoMarkDone(poId,stepCode){
+  if(!confirm('Remove "Mark Done" for this step? It will go back to pending.'))return;
+  var po=S.pos.find(function(p){return p.id===poId;});if(!po)return;
+  var updated=JSON.parse(JSON.stringify(po));
+  updated.steps[stepCode]={done:false,actualDate:null,remarks:'',checklistAnswers:{}};
+  // If undoing receiving (step 3), also clear steps 5 & 6 planned dates
+  if(stepCode==='3'){
+    updated.planned['5']=null;
+    updated.planned['6']=null;
+  }
+  try{
+    await apiPatch('/api/pos/'+poId,updated);
+    showToast('Step marked as pending again','success');
     await refreshAndRender();
   }catch(e){alert('Error — check connection');}
 }
