@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FMS — Purchase Order Management</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#161b26;--bg3:#1e2535;--bg4:#252d40;
+  --border:#2a3448;--text:#e8eaf0;--text2:#9aa5bc;--text3:#5a6580;
+  --blue:#4f8ef7;--blue2:#2d6fd4;--blue-dim:#1a3a6e;
+  --green:#34d399;--green-dim:#0d3d2a;
+  --amber:#fbbf24;--amber-dim:#3d2f08;
+  --red:#f87171;--red-dim:#3d1111;
+  --purple:#a78bfa;--purple-dim:#2d1f5e;
+}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input,select,textarea{font-family:inherit;outline:none}
+.hidden{display:none!important}
+#login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:100%;max-width:380px}
+.login-logo{font-size:28px;font-weight:700;margin-bottom:4px}
+.login-sub{color:var(--text3);font-size:13px;margin-bottom:28px}
+.lbl{font-size:12px;color:var(--text2);margin-bottom:5px;display:block}
+.inp{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;margin-bottom:14px}
+.inp:focus{border-color:var(--blue)}
+select.inp{appearance:none;cursor:pointer}
+.btn-login{width:100%;background:var(--blue);color:#fff;padding:12px;border-radius:8px;font-size:14px;font-weight:500}
+.btn-login:hover{background:var(--blue2)}
+#app-page{display:flex;flex-direction:column;min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:99;flex-wrap:wrap;gap:8px}
+.topbar-logo{font-size:16px;font-weight:700}
+.type-tabs{display:flex;gap:4px}
+.type-tab{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--text2)}
+.type-tab.active{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
+.user-info{font-size:12px;color:var(--text2);background:var(--bg3);padding:5px 10px;border-radius:6px;border:1px solid var(--border)}
+.btn-logout{font-size:12px;color:var(--text3);background:transparent;padding:5px 10px;border-radius:6px;border:1px solid var(--border)}
+.btn-logout:hover{color:var(--red);border-color:var(--red)}
+.nav{display:flex;gap:2px;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto}
+.nav-btn{padding:7px 16px;border-radius:6px;font-size:13px;font-weight:500;background:transparent;color:var(--text2);border:none;white-space:nowrap}
+.nav-btn.active{background:var(--bg3);color:var(--text)}
+.content{padding:16px;max-width:1100px;margin:0 auto;width:100%}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:14px}
+.stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.stat-val{font-size:22px;font-weight:700;color:var(--text)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.b-blue{background:var(--blue-dim);color:var(--blue)}
+.b-green{background:var(--green-dim);color:var(--green)}
+.b-amber{background:var(--amber-dim);color:var(--amber)}
+.b-red{background:var(--red-dim);color:var(--red)}
+.b-purple{background:var(--purple-dim);color:var(--purple)}
+.b-gray{background:var(--bg4);color:var(--text2)}
+.po-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.po-header{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 16px;cursor:pointer;gap:8px}
+.po-header:hover{background:var(--bg3)}
+.po-num{font-size:15px;font-weight:700;font-family:monospace;color:var(--text)}
+.po-meta{font-size:11px;color:var(--text3);margin-top:4px;display:flex;flex-wrap:wrap;gap:8px}
+.po-body{padding:14px 16px;border-top:1px solid var(--border);background:var(--bg)}
+.step-row{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px}
+.step-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.dot-done{background:var(--green-dim);color:var(--green)}
+.dot-late{background:var(--red-dim);color:var(--red)}
+.dot-pending{background:var(--bg4);color:var(--text3)}
+.step-name{font-size:13px;font-weight:500;color:var(--text)}
+.step-dates{font-size:11px;color:var(--text3);margin-top:2px}
+.btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue2)}
+.btn-success{background:var(--green-dim);color:var(--green);border:1px solid #1a5c42}
+.btn-success:hover{background:#1a5c42}
+.btn-danger{background:var(--red-dim);color:var(--red);border:1px solid #5c1a1a}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:200;padding:14px}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)}
+.modal-ttl{font-size:15px;font-weight:600}
+.modal-cls{background:transparent;color:var(--text2);font-size:22px;line-height:1;padding:2px 6px}
+.modal-body{padding:18px}
+.modal-ftr{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.alert{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:10px}
+.alert-warn{background:var(--amber-dim);border:1px solid #7a5c10;color:var(--amber)}
+.alert-danger{background:var(--red-dim);border:1px solid #5c1a1a;color:var(--red)}
+.alert-info{background:var(--blue-dim);border:1px solid var(--blue2);color:var(--blue)}
+.alert-success{background:var(--green-dim);border:1px solid #1a5c42;color:var(--green)}
+.cl-item{display:flex;align-items:flex-start;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);gap:8px}
+.cl-q-en{font-size:12px;color:var(--text)}
+.cl-q-hi{font-size:11px;color:var(--text3)}
+.cl-btns{display:flex;gap:6px;flex-shrink:0}
+.cl-btn{padding:3px 10px;border-radius:5px;font-size:11px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer}
+.cl-btn.yes.active{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+.cl-btn.no.active{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+.file-area{border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;color:var(--text3);font-size:12px;display:block}
+.file-area:hover{border-color:var(--blue)}
+.file-area.done{border-color:var(--green);background:var(--green-dim);color:var(--green)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{text-align:left;padding:7px 10px;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg3)}
+.flex{display:flex;align-items:center}
+.gap6{gap:6px}.gap8{gap:8px}.gap10{gap:10px}
+.ml-a{margin-left:auto}.mt8{margin-top:8px}.mt12{margin-top:12px}
+.search{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:13px;width:100%}
+.search:focus{border-color:var(--blue);outline:none}
+.empty{text-align:center;padding:40px;color:var(--text3)}
+.partial-bar{height:5px;background:var(--bg4);border-radius:3px;margin-top:5px;overflow:hidden}
+.partial-fill{height:100%;background:var(--green);border-radius:3px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:14px}
+.tab{padding:7px 14px;font-size:13px;font-weight:500;color:var(--text3);background:transparent;border:none;cursor:pointer;border-bottom:2px solid transparent}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.score-bad{color:var(--red);font-weight:600;font-family:monospace}
+.score-zero{color:var(--text2);font-family:monospace}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-bar{text-align:center;padding:40px;color:var(--text3)}
+@media(max-width:580px){.form-row{grid-template-columns:1fr}.content{padding:10px}.topbar{padding:10px 12px}}
+</style>
+</head>
+<body>
+
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">FMS</div>
+    <div class="login-sub">Purchase Order Management System</div>
+    <label class="lbl">Select your profile</label>
+    <select class="inp" id="user-select">
+      <option value="">— Choose user —</option>
+      <option value="abhishek">Abhishek (Doer)</option>
+      <option value="ajay">Ajay (Doer)</option>
+      <option value="narendra">Narendra (Admin)</option>
+      <option value="mehul">Mehul (Admin)</option>
+    </select>
+    <button class="btn-login" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<div id="app-page" class="hidden">
+  <div class="topbar">
+    <div class="flex gap8">
+      <div class="topbar-logo">FMS</div>
+      <div class="type-tabs">
+        <button class="type-tab active" id="tab-color"    onclick="switchType('COLOR')">Color</button>
+        <button class="type-tab"        id="tab-chemical" onclick="switchType('CHEMICAL')">Chemical</button>
+      </div>
+    </div>
+    <div class="flex gap8">
+      <span class="user-info" id="user-chip"></span>
+      <button class="btn-logout" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" id="nav-dash"  onclick="showPage('dash')">📋 PO Dashboard</button>
+    <button class="nav-btn"        id="nav-mis"   onclick="showPage('mis')">📊 MIS Report</button>
+    <button class="nav-btn hidden" id="nav-admin" onclick="showPage('admin')">⚙ Admin</button>
+  </div>
+  <div class="content" id="main-content"><div class="loading-bar"><div class="spinner"></div></div></div>
+</div>
+
+<div id="modal-root"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════
+// API base — empty string means same host (works on Render)
+var API = '';
+
+// ══════════════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════════════
+var USERS = {
+  abhishek:{name:'Abhishek',role:'doer', steps:['1','3']},
+  ajay:    {name:'Ajay',    role:'doer', steps:['2','4','5','6']},
+  narendra:{name:'Narendra',role:'admin',steps:[]},
+  mehul:   {name:'Mehul',   role:'admin',steps:[]}
+};
+var STEPS = [
+  {code:'1',label:'Issue PO',                doer:'abhishek',how:'Phone & Email'},
+  {code:'2',label:'Follow up with Supplier', doer:'ajay',    how:'Phone & WhatsApp'},
+  {code:'3',label:'Material Receiving',      doer:'abhishek',how:'Physical Check'},
+  {code:'4',label:'QC Check',                doer:'abhishek',how:'Physical Check'},
+  {code:'5',label:'Store Material & Daybook',doer:'ajay',    how:'Checklist ST-1'},
+  {code:'6',label:'Accounts Process',        doer:'ajay',    how:'Checklist PAC-1'}
+];
+var CHECKLIST=[
+  {id:'q1',en:'Correct PO number on bill?',         hi:'क्या सही पीओ संख्या बिल पर है?'},
+  {id:'q2',en:'Bill received?',                     hi:'क्या बिल प्राप्त हुआ?'},
+  {id:'q3',en:'Price mentioned on bill?',           hi:'क्या बिल में प्राइस मेंशन है?'},
+  {id:'q4',en:'Quantity & quality matched with PO?',hi:'क्या पीओ के साथ मात्रा और गुणवत्ता का मिलान किया?'},
+  {id:'q5',en:'Packaging checked (no damage)?',     hi:'क्या पैकिंग की जाँच करी कटी फटी तो नहीं है?'},
+  {id:'q6',en:'Receiving given?',                   hi:'क्या रिसीविंग दे दी?'},
+  {id:'q7',en:'PO qty and bill qty match?',         hi:'क्या पीओ की और बिल की मात्रा बराबर है या नहीं?'}
+];
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+var S={user:null,fmsType:'COLOR',page:'dash',pos:[],vendors:[],dashFilter:'active',dashSearch:'',adminTab:'vendors'};
+
+function saveLocal(){try{localStorage.setItem('fms_user',S.user||'');localStorage.setItem('fms_type',S.fmsType);}catch(e){}}
+function loadLocal(){try{S.user=localStorage.getItem('fms_user')||null;S.fmsType=localStorage.getItem('fms_type')||'COLOR';}catch(e){}}
+
+// ══════════════════════════════════════════════════════════════
+// API HELPERS
+// ══════════════════════════════════════════════════════════════
+function apiFetch(method,url,body){
+  var opts={method:method,headers:{'Content-Type':'application/json'}};
+  if(body) opts.body=JSON.stringify(body);
+  return fetch(API+url,opts).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();});
+}
+function apiGet(url){return apiFetch('GET',url);}
+function apiPost(url,b){return apiFetch('POST',url,b);}
+function apiPatch(url,b){return apiFetch('PATCH',url,b);}
+function apiDelete(url,b){return apiFetch('DELETE',url,b);}
+
+async function loadData(){
+  try{
+    var [pos,vendors]=await Promise.all([
+      apiGet('/api/pos?type='+S.fmsType),
+      apiGet('/api/vendors?type='+S.fmsType)
+    ]);
+    S.pos=pos; S.vendors=vendors;
+  }catch(e){S.pos=[];S.vendors=[];showToast('Server error — check connection','danger');}
+}
+
+// ══════════════════════════════════════════════════════════════
+// DATE HELPERS
+// ══════════════════════════════════════════════════════════════
+function addDays(d,n){var r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function setHM(d,h,m){var r=new Date(d);r.setHours(h,m,0,0);return r;}
+function calcPlanned(entryDate,leadDays){
+  var po=new Date(entryDate),del=addDays(po,leadDays);
+  return{
+    '1':setHM(po,18,0).toISOString(),
+    '2':setHM(addDays(del,-2),9,0).toISOString(),
+    '3':setHM(del,9,0).toISOString(),
+    '4':setHM(del,17,0).toISOString(),
+    '5':null,'6':null
+  };
+}
+function calcPostRcv(rcvDate){
+  return{
+    '5':setHM(new Date(rcvDate),21,0).toISOString(),
+    '6':setHM(addDays(new Date(rcvDate),1),20,0).toISOString()
+  };
+}
+function fmt(iso){
+  if(!iso)return'—';
+  var d=new Date(iso);
+  var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+  var h=d.getHours(),ampm=h>=12?'PM':'AM',hh=h%12||12,mm=String(d.getMinutes()).padStart(2,'0');
+  return d.getDate()+' '+mo+' '+hh+':'+mm+' '+ampm;
+}
+function fmtDate(iso){
+  if(!iso)return'—';
+  var d=new Date(iso);
+  return d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+' '+d.getFullYear();
+}
+function isLate(planned,actual){
+  if(!planned)return false;
+  return(actual?new Date(actual):new Date())>new Date(planned);
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ══════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════
+function showToast(msg,type){
+  var el=document.createElement('div');
+  el.style.cssText='position:fixed;bottom:20px;right:20px;z-index:999;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;max-width:300px;';
+  el.style.background=type==='danger'?'var(--red-dim)':type==='success'?'var(--green-dim)':'var(--blue-dim)';
+  el.style.color=type==='danger'?'var(--red)':type==='success'?'var(--green)':'var(--blue)';
+  el.style.border='1px solid '+(type==='danger'?'#5c1a1a':type==='success'?'#1a5c42':'var(--blue2)');
+  el.textContent=msg;
+  document.body.appendChild(el);
+  setTimeout(function(){el.remove();},3000);
+}
+
+// ══════════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════════
+function doLogin(){
+  var sel=document.getElementById('user-select').value;
+  if(!sel){alert('Please select a user');return;}
+  S.user=sel;saveLocal();showApp();
+}
+function doLogout(){
+  S.user=null;saveLocal();
+  document.getElementById('app-page').classList.add('hidden');
+  document.getElementById('login-page').classList.remove('hidden');
+}
+async function showApp(){
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app-page').classList.remove('hidden');
+  var u=USERS[S.user];
+  document.getElementById('user-chip').textContent=u.name+' · '+(u.role==='admin'?'Admin':'Doer');
+  if(u.role==='admin')document.getElementById('nav-admin').classList.remove('hidden');
+  document.getElementById('tab-color').className='type-tab'+(S.fmsType==='COLOR'?' active':'');
+  document.getElementById('tab-chemical').className='type-tab'+(S.fmsType==='CHEMICAL'?' active':'');
+  await refreshAndRender();
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════════════
+async function switchType(t){
+  S.fmsType=t;saveLocal();
+  document.getElementById('tab-color').className='type-tab'+(t==='COLOR'?' active':'');
+  document.getElementById('tab-chemical').className='type-tab'+(t==='CHEMICAL'?' active':'');
+  await refreshAndRender();
+}
+async function showPage(p){
+  S.page=p;
+  ['dash','mis','admin'].forEach(function(x){
+    var el=document.getElementById('nav-'+x);
+    if(el)el.className='nav-btn'+(x===p?' active':'')+(x==='admin'&&USERS[S.user].role!=='admin'?' hidden':'');
+  });
+  await refreshAndRender();
+}
+async function refreshAndRender(){
+  document.getElementById('main-content').innerHTML='<div class="loading-bar"><div class="spinner"></div></div>';
+  await loadData();
+  render();
+}
+function render(){
+  var c=document.getElementById('main-content');
+  if(S.page==='dash')renderDash(c);
+  else if(S.page==='mis')renderMIS(c);
+  else if(S.page==='admin')renderAdmin(c);
+}
+
+// ══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════════
+function renderDash(c){
+  var u=USERS[S.user];
+  var myPending=0,overdue=0;
+  S.pos.forEach(function(p){
+    if(p.status==='cancelled')return;
+    STEPS.forEach(function(sd){
+      var step=p.steps[sd.code];
+      if(!step||step.done)return;
+      if(u.steps.indexOf(sd.code)>=0)myPending++;
+      if(isLate(p.planned[sd.code],null))overdue++;
+    });
+  });
+
+  var html='<div class="grid3">'
+    +'<div class="stat-box"><div class="stat-lbl">Total POs</div><div class="stat-val">'+S.pos.length+'</div></div>'
+    +'<div class="stat-box"><div class="stat-lbl">My Pending</div><div class="stat-val" style="color:'+(myPending?'var(--amber)':'var(--green)')+'">'+myPending+'</div></div>'
+    +'<div class="stat-box"><div class="stat-lbl">Overdue</div><div class="stat-val" style="color:'+(overdue?'var(--red)':'var(--green)')+'">'+overdue+'</div></div>'
+    +'</div>';
+
+  html+='<div class="flex gap8" style="margin-bottom:12px;flex-wrap:wrap">'
+    +'<div class="tabs" style="margin-bottom:0;border-bottom:none">'
+    +['active','all','cancelled'].map(function(f){
+        return '<button class="tab'+(S.dashFilter===f?' active':'')+'" onclick="setDashFilter(\''+f+'\')">'+f.charAt(0).toUpperCase()+f.slice(1)+'</button>';
+      }).join('')
+    +'</div>'
+    +'<input class="search" style="flex:1;min-width:160px" placeholder="Search PO or vendor..." value="'+esc(S.dashSearch)+'" oninput="setDashSearch(this.value)"/>'
+    +(S.user==='abhishek'?'<button class="btn btn-success" onclick="openPOForm()">+ New PO</button>':'')
+    +'</div>';
+
+  var filtered=S.pos.filter(function(p){
+    if(S.dashFilter==='active'&&p.status==='cancelled')return false;
+    if(S.dashFilter==='cancelled'&&p.status!=='cancelled')return false;
+    var q=S.dashSearch.toLowerCase();
+    return!q||String(p.poNo).toLowerCase().includes(q)||p.vendor.toLowerCase().includes(q);
+  });
+
+  if(!filtered.length){html+='<div class="empty">📋 No purchase orders found</div>';}
+  else{filtered.forEach(function(p){html+=renderPOCard(p);});}
+  c.innerHTML=html;
+}
+
+function setDashFilter(f){S.dashFilter=f;render();}
+function setDashSearch(v){S.dashSearch=v;render();}
+
+function renderPOCard(p){
+  var rcvd=(p.receivings||[]).reduce(function(a,r){return a+r.qty;},0);
+  var pct=Math.min(100,Math.round(rcvd/p.totalQty*100));
+  var doneCount=Object.values(p.steps).filter(function(s){return s&&s.done;}).length;
+  var stBadge=p.status==='cancelled'
+    ?'<span class="badge b-red">Cancelled</span>'
+    :doneCount===6?'<span class="badge b-green">Complete</span>'
+    :doneCount===0?'<span class="badge b-gray">Not Started</span>'
+    :'<span class="badge b-amber">Step '+doneCount+'/6</span>';
+
+  return'<div class="po-card">'
+    +'<div class="po-header" onclick="togglePO(\''+p.id+'\')">'
+    +'<div><div class="flex gap6"><span class="po-num">PO #'+esc(p.poNo)+'</span>'
+    +'<span class="badge '+(p.type==='COLOR'?'b-blue':'b-purple')+'">'+p.type+'</span>'+stBadge+'</div>'
+    +'<div class="po-meta"><span>🏢 '+esc(p.vendor)+'</span><span>📦 '+rcvd+'/'+p.totalQty+'</span><span>📅 '+fmtDate(p.entryDate)+'</span><span>⏳ '+p.leadDays+'d lead</span></div>'
+    +(pct>0&&pct<100?'<div class="partial-bar"><div class="partial-fill" style="width:'+pct+'%"></div></div>':'')
+    +'</div><span style="color:var(--text3);font-size:16px">▼</span></div>'
+    +'<div class="po-body hidden" id="pob-'+p.id+'">'+renderPOBody(p)+'</div>'
+    +'</div>';
+}
+
+function renderPOBody(p){
+  var u=USERS[S.user];
+  var html='';
+  if(p.status==='cancelled')html+='<div class="alert alert-danger">Cancelled: '+esc(p.cancelRemark||'No reason given')+'</div>';
+  STEPS.forEach(function(sd){
+    var step=p.steps[sd.code]||{done:false};
+    var pl=p.planned[sd.code];
+    var late=!step.done&&isLate(pl,null);
+    var dotCls=step.done?'dot-done':late?'dot-late':'dot-pending';
+    var canDo=u.steps.indexOf(sd.code)>=0&&!step.done&&p.status!=='cancelled';
+    html+='<div class="step-row">'
+      +'<div class="step-dot '+dotCls+'">'+(step.done?'✓':sd.code)+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div class="step-name">'+sd.label+'</div>'
+      +'<div class="step-dates">Planned: '+fmt(pl)
+      +(step.done?' &nbsp;|&nbsp; <span style="color:'+(isLate(pl,step.actualDate)?'var(--red)':'var(--green)')+'">Done: '+fmt(step.actualDate)+'</span>':'')
+      +(late?'&nbsp;<span style="color:var(--red)">⚠ Overdue</span>':'')
+      +'</div>'
+      +(step.remarks?'<div style="font-size:11px;color:var(--text3);margin-top:2px">Note: '+esc(step.remarks)+'</div>':'')
+      +'</div>'
+      +(canDo?'<button class="btn btn-success btn-sm" onclick="openMarkDone(\''+p.id+'\',\''+sd.code+'\')">Mark Done</button>':'')
+      +'</div>';
+  });
+  if((p.receivings||[]).length){
+    html+='<div class="mt8"><div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600">RECEIVING HISTORY</div>';
+    p.receivings.forEach(function(r){
+      html+='<div class="step-row" style="flex-direction:column;gap:4px">'
+        +'<div class="flex gap6"><span class="badge b-green">+'+r.qty+'</span>'
+        +'<span style="font-size:11px;color:var(--text3)">'+fmt(r.date)+'</span>'
+        +(r.invoiceImg?'<a href="'+r.invoiceImg+'" target="_blank" style="font-size:11px;color:var(--blue)">📷 View Invoice</a>':'')
+        +'</div>'
+        +(r.remarks?'<div style="font-size:11px;color:var(--text3)">'+esc(r.remarks)+'</div>':'')
+        +'</div>';
+    });
+    html+='</div>';
+  }
+  if(USERS[S.user].role==='admin'&&p.status!=='cancelled')
+    html+='<button class="btn btn-danger btn-sm mt8" onclick="openCancel(\''+p.id+'\')">✕ Cancel PO</button>';
+  return html;
+}
+
+function togglePO(id){
+  var b=document.getElementById('pob-'+id);
+  if(b)b.classList.toggle('hidden');
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════════════════════
+function showModal(title,body,footer){
+  document.getElementById('modal-root').innerHTML=
+    '<div class="overlay" onclick="if(event.target===this)closeModal()">'
+    +'<div class="modal">'
+    +'<div class="modal-hdr"><span class="modal-ttl">'+title+'</span><button class="modal-cls" onclick="closeModal()">×</button></div>'
+    +'<div class="modal-body">'+body+'</div>'
+    +(footer?'<div class="modal-ftr">'+footer+'</div>':'')
+    +'</div></div>';
+}
+function closeModal(){document.getElementById('modal-root').innerHTML='';}
+
+// ══════════════════════════════════════════════════════════════
+// PO FORM
+// ══════════════════════════════════════════════════════════════
+function openPOForm(){
+  var vOpts=S.vendors.map(function(v){return'<option value="'+esc(v)+'">'+esc(v)+'</option>';}).join('');
+  showModal('New Purchase Order',
+    '<div class="form-row">'
+    +'<div class="form-group"><label class="lbl">PO Number</label><input class="inp" id="f-pono" placeholder="e.g. 114"/></div>'
+    +'<div class="form-group"><label class="lbl">Vendor</label><select class="inp" id="f-vendor"><option value="">Select vendor</option>'+vOpts+'</select></div>'
+    +'</div><div class="form-row">'
+    +'<div class="form-group"><label class="lbl">Total Qty Ordered</label><input class="inp" type="number" id="f-qty" placeholder="e.g. 500"/></div>'
+    +'<div class="form-group"><label class="lbl">Lead Time (days)</label><input class="inp" type="number" id="f-lead" placeholder="e.g. 7, 10, 15" oninput="updateDelivery(this.value)"/></div>'
+    +'</div><div class="alert alert-info" id="f-del-info">Enter lead time to see expected delivery</div>',
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>'
+    +'<button class="btn btn-success" onclick="submitPO()">Create PO</button>'
+  );
+}
+function updateDelivery(v){
+  var el=document.getElementById('f-del-info');
+  if(el)el.textContent=parseInt(v)>0?'Expected delivery: '+fmtDate(addDays(new Date(),parseInt(v)).toISOString()):'Enter lead time to see expected delivery';
+}
+async function submitPO(){
+  var poNo=(document.getElementById('f-pono')||{}).value||'';
+  var vendor=(document.getElementById('f-vendor')||{}).value||'';
+  var qty=parseInt((document.getElementById('f-qty')||{}).value||'0');
+  var lead=parseInt((document.getElementById('f-lead')||{}).value||'0');
+  if(!poNo.trim()||!vendor||!qty||!lead){alert('All fields are required');return;}
+  var now=new Date().toISOString();
+  var planned=calcPlanned(now,lead);
+  var steps={};
+  STEPS.forEach(function(sd){steps[sd.code]={done:false,actualDate:null,remarks:'',checklistAnswers:{}};});
+  var po={type:S.fmsType,poNo:poNo.trim(),vendor,totalQty:qty,leadDays:lead,
+    entryDate:now,entryBy:S.user,status:'active',planned,steps,receivings:[],cancelRemark:''};
+  try{
+    await apiPost('/api/pos',po);
+    closeModal();showToast('PO created successfully','success');
+    await refreshAndRender();
+  }catch(e){alert('Error creating PO');}
+}
+
+// ══════════════════════════════════════════════════════════════
+// MARK DONE
+// ══════════════════════════════════════════════════════════════
+var _md={};
+function openMarkDone(poId,stepCode){
+  var po=S.pos.find(function(p){return p.id===poId;});
+  if(!po)return;
+  var sd=STEPS.find(function(s){return s.code===stepCode;});
+  _md={poId,stepCode,checklist:{},invoiceImg:null,invoiceFile:''};
+  var isRcv=stepCode==='3',isStore=stepCode==='5';
+  var rcvdSoFar=(po.receivings||[]).reduce(function(a,r){return a+r.qty;},0);
+  var body='';
+  if(isRcv){
+    body+='<div class="form-group"><label class="lbl">Qty Received (Ordered: '+po.totalQty+', Got so far: '+rcvdSoFar+')</label>'
+      +'<input class="inp" type="number" id="md-qty" placeholder="Enter qty this delivery"/></div>'
+      +'<div class="form-group"><label class="lbl">Invoice Photo (mandatory)</label>'
+      +'<label class="file-area" id="md-file-lbl" for="md-file-inp">📷 Tap to upload invoice photo</label>'
+      +'<input type="file" id="md-file-inp" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)"/>'
+      +'</div>';
+  }
+  if(isStore){
+    body+='<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">Store & Daybook Checklist (ST-1)</div>';
+    CHECKLIST.forEach(function(q){
+      body+='<div class="cl-item"><div><div class="cl-q-en">'+q.en+'</div><div class="cl-q-hi">'+q.hi+'</div></div>'
+        +'<div class="cl-btns">'
+        +'<button class="cl-btn yes" id="cl-y-'+q.id+'" onclick="setCheck(\''+q.id+'\',\'yes\')">हाँ</button>'
+        +'<button class="cl-btn no" id="cl-n-'+q.id+'" onclick="setCheck(\''+q.id+'\',\'no\')">नहीं</button>'
+        +'</div></div>';
+    });
+    body+='<div class="mt8"></div>';
+  }
+  body+='<div class="form-group"><label class="lbl">Remarks (optional)</label>'
+    +'<textarea class="inp" id="md-remarks" rows="2" placeholder="Any notes..."></textarea></div>';
+  showModal('Mark Done — '+sd.label,body,
+    '<button class="btn btn-ghost" onclick="closeModal()">Cancel</button>'
+    +'<button class="btn btn-success" onclick="submitMarkDone()">✓ Mark as Done</button>'
+  );
+}
+function setCheck(qid,val){
+  _md.checklist[qid]=val;
+  var ye=document.getElementById('cl-y-'+qid),no=document.getElementById('cl-n-'+qid);
+  if(ye)ye.className='cl-btn yes'+(val==='yes'?' active':'');
+  if(no)no.className='cl-btn no'+(val==='no'?' active':'');
+}
+function handleFile(inp){
+  var f=inp.files[0];if(!f)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    _md.invoiceImg=e.target.result;_md.invoiceFile=f.name;
+    var l=document.getElementById('md-file-lbl');
+    if(l){l.className='file-area done';l.textContent='✓ '+f.name;}
+  };
+  reader.readAsDataURL(f);
+}
+async function submitMarkDone(){
+  var po=S.pos.find(function(p){return p.id===_md.poId;});if(!po)return;
+  var stepCode=_md.stepCode,isRcv=stepCode==='3',isStore=stepCode==='5';
+  var remarks=(document.getElementById('md-remarks')||{}).value||'';
+  var now=new Date().toISOString();
+  var updated=JSON.parse(JSON.stringify(po));
+  if(isRcv){
+    var qty=parseInt((document.getElementById('md-qty')||{}).value||'0');
+    if(!qty||qty<=0){alert('Enter received quantity');return;}
+    if(!_md.invoiceImg){alert('Invoice photo is mandatory');return;}
+    var rcvdSoFar=(po.receivings||[]).reduce(function(a,r){return a+r.qty;},0);
+    updated.receivings.push({qty,date:now,invoiceImg:_md.invoiceImg,invoiceFile:_md.invoiceFile,remarks});
+    if(rcvdSoFar+qty>=po.totalQty){
+      updated.steps['3']={done:true,actualDate:now,remarks,checklistAnswers:{}};
+      var pd=calcPostRcv(now);
+      updated.planned['5']=pd['5'];updated.planned['6']=pd['6'];
+    }
+  } else {
+    if(isStore&&Object.keys(_md.checklist).length<CHECKLIST.length){alert('Please answer all checklist questions');return;}
+    updated.steps[stepCode]={done:true,actualDate:now,remarks,checklistAnswers:isStore?_md.checklist:{}};
+  }
+  try{
+    await apiPatch('/api/pos/'+po.id,updated);
+    closeModal();showToast('Step marked as done','success');
+    await refreshAndRender();
+  }catch(e){alert('Error saving — check connection');}
+}
+
+// ══════════════════════════════════════════════════════════════
+// CANCEL PO
+// ══════════════════════════════════════════════════════════════
+function openCancel(poId){
+  var po=S.pos.find(function(p){return p.id===poId;});if(!po)return;
+  showModal('Cancel Purchase Order',
+    '<div class="alert alert-warn">This will cancel PO #'+esc(po.poNo)+'. The record will be kept.</div>'
+    +'<div class="form-group"><label class="lbl">Reason for cancellation</label>'
+    +'<textarea class="inp" id="cancel-remark" rows="3" placeholder="Enter reason..."></textarea></div>',
+    '<button class="btn btn-ghost" onclick="closeModal()">Back</button>'
+    +'<button class="btn btn-danger" onclick="confirmCancel(\''+poId+'\')">Confirm Cancel</button>'
+  );
+}
+async function confirmCancel(poId){
+  var remark=(document.getElementById('cancel-remark')||{}).value||'';
+  var po=S.pos.find(function(p){return p.id===poId;});if(!po)return;
+  try{
+    await apiPatch('/api/pos/'+poId,{...po,status:'cancelled',cancelRemark:remark});
+    closeModal();showToast('PO cancelled','success');
+    await refreshAndRender();
+  }catch(e){alert('Error — check connection');}
+}
+
+// ══════════════════════════════════════════════════════════════
+// MIS
+// ══════════════════════════════════════════════════════════════
+function renderMIS(c){
+  var now=new Date(),day=now.getDay(),off=day===0?-6:1-day;
+  var mon=new Date(now);mon.setDate(now.getDate()+off);mon.setHours(0,0,0,0);
+  var sun=new Date(mon);sun.setDate(mon.getDate()+6);
+
+  var prevWs=c.querySelector&&c.querySelector('#mis-ws');
+  var wsVal=prevWs?prevWs.value:mon.toISOString().split('T')[0];
+  var prevWe=c.querySelector&&c.querySelector('#mis-we');
+  var weVal=prevWe?prevWe.value:sun.toISOString().split('T')[0];
+
+  var html='<div class="card"><div class="card-title">MIS Report — Weekly</div>'
+    +'<div class="form-row">'
+    +'<div class="form-group"><label class="lbl">Week Start</label><input type="date" class="inp" id="mis-ws" value="'+wsVal+'" onchange="renderMISRefresh()"/></div>'
+    +'<div class="form-group"><label class="lbl">Week End</label><input type="date" class="inp" id="mis-we" value="'+weVal+'" onchange="renderMISRefresh()"/></div>'
+    +'</div></div>';
+
+  var ws=new Date(wsVal);ws.setHours(0,0,0,0);
+  var we=new Date(weVal);we.setHours(23,59,59,999);
+  var stepData={};
+  STEPS.forEach(function(sd){
+    var planned=0,done=0,late=0;
+    S.pos.forEach(function(p){
+      if(p.status==='cancelled')return;
+      var pl=p.planned[sd.code];if(!pl)return;
+      var plDate=new Date(pl);
+      if(plDate>=ws&&plDate<=we){
+        planned++;
+        var step=p.steps[sd.code];
+        if(step&&step.done){done++;if(isLate(pl,step.actualDate))late++;}
+      }
+    });
+    var score=planned>0?Math.round((done/planned*100-100)*100)/100:null;
+    stepData[sd.code]={planned,done,late,score,notDone:planned-done};
+  });
+
+  html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:14px">';
+  ['abhishek','ajay'].forEach(function(uid){
+    var u=USERS[uid];var tp=0,td=0,tl=0;
+    STEPS.forEach(function(sd){if(u.steps.indexOf(sd.code)<0)return;var d=stepData[sd.code];tp+=d.planned;td+=d.done;tl+=d.late;});
+    var combined=tp>0?Math.round((td/tp*100-100)*100)/100:null;
+    var cls=combined===null||combined===0?'score-zero':'score-bad';
+    html+='<div class="card"><div class="card-title">'+u.name+'</div>'
+      +'<div class="grid3" style="margin-bottom:8px">'
+      +'<div class="stat-box"><div class="stat-lbl">Planned</div><div class="stat-val">'+tp+'</div></div>'
+      +'<div class="stat-box"><div class="stat-lbl">Done</div><div class="stat-val" style="color:var(--green)">'+td+'</div></div>'
+      +'<div class="stat-box"><div class="stat-lbl">Late</div><div class="stat-val" style="color:'+(tl?'var(--amber)':'var(--text2)')+'">'+tl+'</div></div>'
+      +'</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border-radius:8px">'
+      +'<span style="font-size:12px;color:var(--text2)">Combined Score</span>'
+      +'<span class="'+cls+'" style="font-size:18px">'+(combined===null?'—':combined===0?'0 ✓':combined)+'</span>'
+      +'</div></div>';
+  });
+  html+='</div>';
+
+  html+='<div class="card"><div class="card-title">Step-wise Breakdown</div><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Step</th><th>Doer</th><th>Planned</th><th>Done</th><th>Late</th><th>Not Done</th><th>Score</th></tr></thead><tbody>';
+  STEPS.forEach(function(sd){
+    var d=stepData[sd.code],cls=d.score===null||d.score===0?'score-zero':'score-bad';
+    html+='<tr><td><div style="font-weight:500">'+sd.label+'</div><div style="font-size:11px;color:var(--text3)">'+sd.how+'</div></td>'
+      +'<td>'+(USERS[sd.doer]?USERS[sd.doer].name:'—')+'</td>'
+      +'<td>'+d.planned+'</td><td style="color:var(--green)">'+d.done+'</td>'
+      +'<td style="color:'+(d.late?'var(--amber)':'var(--text2)')+'">'+d.late+'</td>'
+      +'<td style="color:'+(d.notDone?'var(--red)':'var(--text2)')+'">'+d.notDone+'</td>'
+      +'<td><span class="'+cls+'">'+(d.score===null?'—':d.score===0?'0 ✓':d.score)+'</span></td></tr>';
+  });
+  html+='</tbody></table></div></div>';
+  c.innerHTML=html;
+}
+function renderMISRefresh(){renderMIS(document.getElementById('main-content'));}
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════════════════════
+function renderAdmin(c){
+  var html='<div class="tabs">'
+    +'<button class="tab'+(S.adminTab==='vendors'?' active':'')+'" onclick="setAdminTab(\'vendors\')">Vendors</button>'
+    +'<button class="tab'+(S.adminTab==='data'?' active':'')+'" onclick="setAdminTab(\'data\')">Data Management</button>'
+    +'</div>';
+
+  if(S.adminTab==='vendors'){
+    html+='<div class="card"><div class="card-title">Vendor List — '+S.fmsType+'</div>'
+      +'<div class="flex gap8" style="margin-bottom:12px">'
+      +'<input class="search" id="new-vendor" placeholder="New vendor name" style="flex:1"/>'
+      +'<button class="btn btn-success" onclick="addVendor()">Add</button></div>';
+    S.vendors.forEach(function(v){
+      html+='<div class="flex gap8" style="padding:8px 0;border-bottom:1px solid var(--border)">'
+        +'<span style="flex:1;font-size:13px">'+esc(v)+'</span>'
+        +'<button class="btn btn-danger btn-sm" onclick="removeVendor(\''+esc(v)+'\')">Remove</button></div>';
+    });
+    html+='</div>';
+  } else {
+    html+='<div class="card"><div class="card-title">Data Management</div>'
+      +'<div class="alert alert-warn" style="margin-bottom:12px">⚠ Deleting data is permanent. Only do this at financial year end.</div>'
+      +'<div style="font-size:13px;color:var(--text2);margin-bottom:10px">Total POs ('+S.fmsType+'): '+S.pos.length+'</div>'
+      +'<button class="btn btn-danger" onclick="deleteAllData()">🗑 Delete All '+S.fmsType+' Data (FY Reset)</button></div>'
+      +'<div class="card"><div class="card-title">All PO Records</div><div style="overflow-x:auto"><table class="tbl">'
+      +'<thead><tr><th>PO No</th><th>Vendor</th><th>Qty</th><th>Received</th><th>Lead</th><th>Date</th><th>Status</th></tr></thead><tbody>';
+    S.pos.forEach(function(p){
+      var rcvd=(p.receivings||[]).reduce(function(a,r){return a+r.qty;},0);
+      var done=Object.values(p.steps).filter(function(s){return s&&s.done;}).length;
+      var stBadge=p.status==='cancelled'?'<span class="badge b-red">Cancelled</span>'
+        :done===6?'<span class="badge b-green">Complete</span>'
+        :'<span class="badge b-amber">'+done+'/6</span>';
+      html+='<tr><td style="font-family:monospace;font-weight:600">'+esc(p.poNo)+'</td>'
+        +'<td>'+esc(p.vendor)+'</td><td>'+p.totalQty+'</td><td>'+rcvd+'/'+p.totalQty+'</td>'
+        +'<td>'+p.leadDays+'d</td><td>'+fmtDate(p.entryDate)+'</td><td>'+stBadge+'</td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+  }
+  c.innerHTML=html;
+}
+function setAdminTab(t){S.adminTab=t;render();}
+async function addVendor(){
+  var inp=document.getElementById('new-vendor');if(!inp)return;
+  var name=inp.value.trim().toUpperCase();if(!name)return;
+  try{
+    var vendors=await apiPost('/api/vendors',{type:S.fmsType,name});
+    S.vendors=vendors;inp.value='';render();showToast('Vendor added','success');
+  }catch(e){alert('Error adding vendor');}
+}
+async function removeVendor(name){
+  if(!confirm('Remove vendor: '+name+'?'))return;
+  try{
+    var vendors=await apiDelete('/api/vendors',{type:S.fmsType,name});
+    S.vendors=vendors;render();showToast('Vendor removed','success');
+  }catch(e){alert('Error removing vendor');}
+}
+async function deleteAllData(){
+  if(!confirm('DELETE ALL '+S.fmsType+' data? This cannot be undone.'))return;
+  try{
+    await apiDelete('/api/pos/type/'+S.fmsType);
+    showToast('All '+S.fmsType+' data deleted','success');
+    await refreshAndRender();
+  }catch(e){alert('Error deleting data');}
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════════════
+loadLocal();
+if(S.user){showApp();}
+</script>
+</body>
+</html>
