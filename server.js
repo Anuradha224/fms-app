@@ -142,7 +142,17 @@ app.patch('/api/pos/:id', (req, res) => {
   res.json(db.pos[idx]);
 });
 
-// DELETE a PO (used in FY reset)
+// DELETE a single PO by id (admin only)
+app.delete('/api/pos/:id', (req, res) => {
+  const db  = readDB();
+  const before = db.pos.length;
+  db.pos = db.pos.filter(p => p.id !== req.params.id);
+  if(db.pos.length === before) return res.status(404).json({ error: 'PO not found' });
+  writeDB(db);
+  res.json({ ok: true });
+});
+
+// DELETE all POs of a type (used in FY reset)
 app.delete('/api/pos/type/:type', (req, res) => {
   const db  = readDB();
   db.pos    = db.pos.filter(p => p.type !== req.params.type);
